@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Listado S3 - __BUCKET__</title>
+  <style>body{font-family:system-ui, -apple-system,Segoe UI, Roboto, "Helvetica Neue", Arial; padding:18px}</style>
+</head>
+<body>
+  <h3>Objetos en <span id="bucket">__BUCKET__</span></h3>
+  <p style="color:#b33;margin-top:0"><strong>Nota:</strong> Esta vista es una emulación local de AWS S3 (LocalStack). Los enlaces son <em>presigned URLs</em> generadas contra el endpoint local; no es la AWS Console real.</p>
+  <p style="font-size:0.9em;color:#555">Si quieres ver el comportamiento contra AWS real, usa la AWS Management Console o configura tu entorno para apuntar a AWS.</p>
+  <div id="content">Cargando...</div>
+  <script>
+    async function load(){
+      try{
+        const res = await fetch('/api/list');
+        const items = await res.json();
+        const cont = document.getElementById('content');
+        if(!items.length) cont.innerHTML = '<p>(vacío)</p>';
+        else cont.innerHTML = '<ul>'+items.map(i=>'<li><a href="'+i.url+'" target="_blank">'+i.key+'</a> — '+i.size+' bytes</li>').join('')+'</ul>';
+      }catch(e){ document.getElementById('content').textContent = 'Error: '+e }
+    }
+    load();
+  </script>
+</body>
+</html>

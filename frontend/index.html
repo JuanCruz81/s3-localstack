@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Upload to LocalStack S3 (presign)</title>
+</head>
+<body>
+  <h3>Subir archivo a S3 (LocalStack) usando presigned URL</h3>
+  <div id="dropzone" style="border:2px dashed #888;padding:20px;text-align:center;cursor:pointer">Arrastra un archivo aquí o haz click</div>
+  <input id="file" type="file" style="display:none" />
+  <div style="margin-top:12px">
+    <button id="upload" disabled>Subir</button>
+    <button id="open-list">Ver archivos (UI)</button>
+  </div>
+  <div style="margin-top:12px">
+    <progress id="progress" value="0" max="100" style="width:100%"></progress>
+  </div>
+  <pre id="out" style="white-space:pre-wrap"></pre>
+
+  <script>
+    const out = document.getElementById('out');
+    const fileInput = document.getElementById('file');
+    const dropzone = document.getElementById('dropzone');
+    const uploadBtn = document.getElementById('upload');
+    const progress = document.getElementById('progress');
+    const openList = document.getElementById('open-list');
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.style.background='#f6f6f6' });
+    dropzone.addEventListener('dragleave', e => { e.preventDefault(); dropzone.style.background='transparent' });
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault(); dropzone.style.background='transparent';
+      const f = e.dataTransfer.files[0];
+      if (f) { fileInput.files = e.dataTransfer.files; uploadBtn.disabled=false; out.textContent = 'Archivo listo: '+f.name; }
+    });
+
+    fileInput.addEventListener('change', () => {
+      const f = fileInput.files[0];
+      uploadBtn.disabled = !f;
+      out.textContent = f ? 'Archivo listo: '+f.name : '';
+    });
+
+    openList.addEventListener('click', () => window.open('/list', '_blank'));
+
+    uploadBtn.addEventListener('click', async () => {
+      const f = fileInput.files[0];
+      if (!f) { out.textContent = 'Selecciona un archivo'; return; }
+      const key = encodeURIComponent(f.name);
+      out.textContent = 'Solicitando presigned URL...';
+      try{
+        const res = await fetch(`/presign?key=${key}`);
+        if (!res.ok) { out.textContent = 'Error al pedir presigned URL: ' + await res.text(); return; }
+        const { url } = await res.json();
+        out.textContent = 'Subiendo archivo a S3...';
+
+        // usar XMLHttpRequest para progreso
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', url);
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) progress.value = Math.round((e.loaded/e.total)*100);
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            out.textContent = 'Subida OK. Key: ' + f.name + '\nPuedes ver archivos en /list';
+            progress.value = 100;
+          } else {
+            out.textContent = 'Error al subir: ' + xhr.status + ' ' + xhr.statusText + '\n' + xhr.responseText;
+          }
+        };
+        xhr.onerror = () => out.textContent = 'Error de red al subir archivo';
+        xhr.send(f);
+      } catch(err){ out.textContent = 'Error: '+String(err); }
+    });
+  </script>
+</body>
+</html>

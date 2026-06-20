@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="420" viewBox="0 0 1000 420">
+  <style>
+    .box { fill: #f7f9fc; stroke:#2b6cb0; stroke-width:2; rx:6; }
+    .title { font: 700 14px/1.2 Arial, sans-serif; fill:#0b2340 }
+    .label { font: 13px/1.2 Arial, sans-serif; fill:#102a43 }
+    .arrow { stroke:#2b6cb0; stroke-width:2; fill:none; marker-end:url(#arrowhead); }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2b6cb0" />
+    </marker>
+  </defs>
+
+  <!-- Browser -->
+  <rect x="40" y="30" width="180" height="70" class="box" />
+  <text x="130" y="55" text-anchor="middle" class="title">Browser</text>
+  <text x="130" y="75" text-anchor="middle" class="label">(usuario)</text>
+
+  <!-- Frontend -->
+  <rect x="280" y="20" width="220" height="100" class="box" />
+  <text x="390" y="50" text-anchor="middle" class="title">Frontend</text>
+  <text x="390" y="72" text-anchor="middle" class="label">`frontend/server.js`</text>
+  <text x="390" y="92" text-anchor="middle" class="label">presign PUT → S3</text>
+
+  <!-- S3 -->
+  <rect x="560" y="20" width="220" height="100" class="box" />
+  <text x="670" y="50" text-anchor="middle" class="title">LocalStack S3</text>
+  <text x="670" y="72" text-anchor="middle" class="label">bucket: `mi-bucket`</text>
+
+  <!-- Arrow Browser -> Frontend -->
+  <path d="M220 65 L280 65" class="arrow" />
+  <text x="250" y="55" class="label" text-anchor="middle">1) GET /presign</text>
+
+  <!-- Arrow Frontend -> S3 (presigned PUT by browser) -->
+  <path d="M500 65 L560 65" class="arrow" />
+  <text x="530" y="55" class="label" text-anchor="middle">2) PUT &lt;presigned-URL&gt;</text>
+
+  <!-- S3 -> Lambda -->
+  <rect x="560" y="150" width="220" height="120" class="box" />
+  <text x="670" y="180" text-anchor="middle" class="title">LocalStack Lambda</text>
+  <text x="670" y="202" text-anchor="middle" class="label">`lambda/index.js`</text>
+  <text x="670" y="222" text-anchor="middle" class="label">lee S3, procesa, escribe processed-bucket</text>
+
+  <path d="M670 120 L670 150" class="arrow" />
+  <text x="700" y="135" class="label">3) S3:ObjectCreated → invoke</text>
+
+  <!-- Processed bucket -->
+  <rect x="560" y="300" width="220" height="70" class="box" />
+  <text x="670" y="330" text-anchor="middle" class="title">Processed bucket</text>
+  <text x="670" y="350" text-anchor="middle" class="label">`mi-bucket-processed`</text>
+
+  <path d="M670 270 L670 300" class="arrow" />
+  <text x="700" y="285" class="label">4) PutObject processed-&lt;key&gt;</text>
+
+  <!-- Side notes -->
+  <g>
+    <rect x="20" y="360" width="960" height="40" fill="#ffffff" stroke="#e2e8f0" rx="4" />
+    <text x="40" y="384" class="label">Key scripts: `deploy_lambda.sh`, `upload_s3.js`, `frontend/server.js`, env: `LOCALSTACK_ENDPOINT`, `LAMBDA_ROLE_ARN`, `BUCKET`</text>
+  </g>
+
+</svg>

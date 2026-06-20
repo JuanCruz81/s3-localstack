@@ -1,0 +1,10 @@
+Debugger listening on ws://127.0.0.1:9229/ba86c385-6339-4022-bee1-512c561ca5e3
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+Frontend server listening http://localhost:3000 (S3 endpoint: http://localhost:4566)
+(node:15317) NOTE: The AWS SDK for JavaScript (v2) has reached end-of-support.
+It will no longer receive updates or releases.
+
+Please migrate your code to use AWS SDK for JavaScript (v3).
+For more information, check the blog post at https://a.co/cUPnyil
+(Use `node --trace-warnings ...` to show where the warning was created)
