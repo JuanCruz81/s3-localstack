@@ -18,6 +18,23 @@ function send404(res) { res.statusCode = 404; res.end('Not found'); }
 
 const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
+  
+  // Health check endpoint
+  if (req.method === 'GET' && parsed.pathname === '/health') {
+    try {
+      const bucket = process.env.BUCKET || 'mi-bucket';
+      await s3.headBucket({ Bucket: bucket }).promise();
+      res.setHeader('Content-Type', 'application/json');
+      res.statusCode = 200;
+      res.end(JSON.stringify({ status: 'healthy', s3: 'connected', timestamp: new Date().toISOString() }));
+    } catch (err) {
+      res.setHeader('Content-Type', 'application/json');
+      res.statusCode = 503;
+      res.end(JSON.stringify({ status: 'unhealthy', s3: 'disconnected', error: String(err) }));
+    }
+    return;
+  }
+  
   if (req.method === 'GET' && (parsed.pathname === '/' || parsed.pathname === '/index.html')) {
     const p = path.join(__dirname, 'index.html');
     res.setHeader('Content-Type', 'text/html');
